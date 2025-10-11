@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Reservas{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('panel_guia') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Panel</a>
+    <h1>Historial de Reservas</h1>
+    <p>Aquí puedes ver tus servicios confirmados y completados.</p>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if reservas %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background-color: #004c3f; color: white;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Fecha</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Hora / Duración</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Cliente</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Tarifa Total</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reserva in reservas %}
+                <tr style="background-color: {% if reserva[7] == 'Completada' %} #e9ffe9 {% elif reserva[7] == 'Confirmada' %} #fff9e9 {% else %} #f9f9f9 {% endif %};">
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">{{ reserva[1] }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{{ reserva[2] }} ({{ "%.1f"|format(reserva[3]) }} hrs)</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        {{ reserva[5] }}
+                        <br><small style="color: #666;">({{ reserva[6] }})</small>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #004c3f;">${{ "%.2f"|format(reserva[4]) }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; color: {% if reserva[7] == 'Completada' %} green {% else %} orange {% endif %};">
+                        {{ reserva[7] }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="margin-top: 20px; padding: 15px; background-color: #f0f0f0; border-left: 5px solid #ffcc00;">
+            No tienes reservas confirmadas ni completadas en este momento.
+        </p>
+    {% endif %}
+{% endblock %}

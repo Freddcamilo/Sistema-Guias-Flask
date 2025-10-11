@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Disponibilidad{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('panel_guia') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Panel</a>
+    <h1>Gestión de Disponibilidad</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>1. Registrar Nueva Disponibilidad</h2>
+    <form method="POST" style="display: flex; gap: 10px; margin-bottom: 30px;">
+        <input type="date" name="fecha" required style="padding: 8px;">
+        <input type="time" name="hora_inicio" required style="padding: 8px;">
+        <input type="time" name="hora_fin" required style="padding: 8px;">
+        <button type="submit" class="btn" style="background-color: #28a745;">Guardar Turno</button>
+    </form>
+
+    <h2>2. Disponibilidad Actual Registrada</h2>
+    {% if disponibilidades %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>Estado</th>
+                    <th>Acción</th> </tr>
+            </thead>
+            <tbody>
+                {% for disp in disponibilidades %}
+                <tr>
+                    <td>{{ disp[1] }}</td>
+                    <td>{{ disp[2] }}</td>
+                    <td>{{ disp[3] }}</td>
+                    <td>{{ disp[4] }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('eliminar_disponibilidad', disponibilidad_id=disp[0]) }}" style="margin:0;">
+                            <button type="submit" class="btn" 
+                                    style="background-color: #dc3545; padding: 5px 10px; font-size: 0.9em;"
+                                    onclick="return confirm('¿Estás seguro de que deseas eliminar este turno? Esta acción no se puede deshacer.');">
+                                Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No tienes disponibilidad registrada a partir de hoy.</p>
+    {% endif %}
+
+{% endblock %}

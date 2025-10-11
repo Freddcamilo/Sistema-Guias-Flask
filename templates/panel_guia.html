@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Guía - {{ guia_nombre }}{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('menu_principal') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Menú Principal</a>
+    
+    <h1>Panel de Control del Guía</h1>
+    <p>
+        ¡Hola, **{{ guia_nombre }}**! (Licencia: {{ licencia_no }})
+        <a href="{{ url_for('logout_guia') }}" class="btn" style="background-color: #dc3545; margin-left: 20px;">
+            Cerrar Sesión
+        </a>
+    </p>
+    
+    <div style="padding: 15px; border: 1px solid #004c3f; border-radius: 5px; background-color: #e6f7ff; margin-bottom: 20px;">
+        <p style="margin: 0;">Tu tarifa base por hora es: **${{ "%.2f"|format(tarifa_base) }}**</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if guia_nombre == 'Guia Test' %}
+    <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border: 1px solid #f5c6cb; border-radius: 5px; margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">Funciones de Administrador (Guia Test)</h2>
+        <a href="{{ url_for('gestionar_idiomas_maestros') }}" class="btn" style="background-color: #17a2b8;">
+            Añadir Idiomas a la Lista Maestra
+        </a>
+    </div>
+    {% endif %}
+
+    <h2>Opciones del Guía</h2>
+    <div class="panel-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        
+        <a href="{{ url_for('gestionar_disponibilidad') }}" class="btn" style="background-color: #007bff;">
+            1. Gestionar Mi Disponibilidad
+        </a>
+        
+        <a href="{{ url_for('gestionar_idiomas') }}" class="btn" style="background-color: #28a745;">
+            2. Gestionar Mis Idiomas
+        </a>
+        
+        <a href="{{ url_for('historial_reservas') }}" class="btn" style="background-color: #ff9900;">
+            3. Ver Historial de Reservas
+        </a>
+        
+        <a href="{{ url_for('gestionar_perfil') }}" class="btn" style="background-color: #6c757d;">
+            **4. Modificar Mi Perfil y Tarifa**
+        </a>
+    </div>
+{% endblock %}

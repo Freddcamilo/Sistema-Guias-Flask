@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('panel_guia') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Panel</a>
+    <h1>Gestión de Mi Perfil</h1>
+    <p>Actualiza tu información personal y tarifas.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" style="max-width: 400px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; margin-top: 20px;">
+
+        <label for="licencia_no" style="display: block; margin-bottom: 5px; font-weight: bold;">
+            Licencia/ID (No Editable):
+        </label>
+        <input type="text" id="licencia_no" value="{{ datos.licencia_no }}" disabled
+               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #f0f0f0; border-radius: 4px; background-color: #eee;">
+        
+        <label for="nombre" style="display: block; margin-bottom: 5px;">Nombre Completo:</label>
+        <input type="text" id="nombre" name="nombre" required 
+               value="{{ datos.nombre }}"
+               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+
+        <label for="tarifa_base" style="display: block; margin-bottom: 5px;">
+            Tarifa Base por Hora (USD):
+        </label>
+        <input type="number" id="tarifa_base" name="tarifa_base" step="0.01" required
+               value="{{ '%.2f'|format(datos.tarifa_base) }}"
+               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+
+        <label for="celular" style="display: block; margin-bottom: 5px;">
+            Número de Celular (para clientes, ej: +51999888777):
+        </label>
+        <input type="text" id="celular" name="celular" 
+               value="{{ datos.celular if datos.celular else '' }}"
+               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+
+        <button type="submit" class="btn" style="background-color: #28a745;">Guardar Cambios</button>
+    </form>
+    
+    <p style="margin-top: 20px; padding: 10px; background-color: #fff3cd; border-left: 5px solid #ffc107;">
+        Para cambiar la contraseña, por favor contacte al administrador.
+    </p>
+
+{% endblock %}

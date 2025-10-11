@@ -1,0 +1,8 @@
+# Contenido de D:\guia_mp_nuevo\.gitignore
+__pycache__/
+*.pyc
+.venv/
+venv/
+machupicchu_guias.db  # <--- ¡CRUCIAL! No subas tu base de datos local
+.DS_Store
+.vscode/

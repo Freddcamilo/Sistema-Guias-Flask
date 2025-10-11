@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Admin: Gestión de Idiomas{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('panel_guia') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Panel</a>
+    <h1>Panel Administrativo: Añadir Idiomas</h1>
+    <p>Esta función solo es accesible para el Administrador (Guía Test).</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Añadir Nuevo Idioma</h2>
+    <form method="POST" style="max-width: 400px; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+        <label for="nuevo_idioma" style="display: block; margin-bottom: 5px;">Nombre del Nuevo Idioma:</label>
+        <input type="text" id="nuevo_idioma" name="nuevo_idioma" required style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+        <button type="submit" class="btn" style="background-color: #ff9900; margin-top: 15px;">Añadir a la Lista Maestra</button>
+    </form>
+
+    <h2 style="margin-top: 40px;">Lista Maestra de Idiomas Actual ({{ idiomas_maestros|length }} idiomas)</h2>
+    <ul style="list-style-type: none; padding: 0;">
+        {% for nombre, id in idiomas_maestros %}
+            <li style="background-color: #f4f4f4; padding: 8px; margin-bottom: 5px; border-left: 4px solid #004c3f;">
+                {{ nombre }} (ID: {{ id }})
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

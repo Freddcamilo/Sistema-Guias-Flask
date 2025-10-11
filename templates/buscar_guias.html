@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Buscar Guías Disponibles{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('menu_principal') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Menú Principal</a>
+    <h1>Buscar Guías Disponibles</h1>
+    <p>Encuentra un guía turístico para tu visita a Machu Picchu.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" style="max-width: 600px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; margin-top: 20px; background-color: #f9f9f9;">
+        <h3 style="margin-top: 0;">Filtros de Búsqueda</h3>
+        
+        <label for="fecha_busqueda" style="display: block; margin-bottom: 5px; font-weight: bold;">Fecha del Tour:</label>
+        <input type="date" id="fecha_busqueda" name="fecha_busqueda" required 
+               value="{{ request.form.get('fecha_busqueda', '') }}"
+               style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
+
+        <label for="idioma_busqueda" style="display: block; margin-bottom: 5px; font-weight: bold;">Idioma Requerido:</label>
+        <select id="idioma_busqueda" name="idioma_busqueda" required
+                style="width: 100%; padding: 8px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;">
+            <option value="">-- Seleccione un Idioma --</option>
+            {% for id, nombre in idiomas_maestros %}
+                <option value="{{ id }}" {% if request.form.get('idioma_busqueda')|int == id %}selected{% endif %}>
+                    {{ nombre }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit" class="btn" style="background-color: #004c3f;">Buscar Guías</button>
+    </form>
+    
+    {% if resultados %}
+        <h2 style="margin-top: 30px;">Resultados de Búsqueda</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background-color: #004c3f; color: white;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Guía / Licencia</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Horario Disponible</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Tarifa Base (USD/hr)</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Idioma / Nivel</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Contacto (Celular)</th> 
+                </tr>
+            </thead>
+            <tbody>
+                {% for resultado in resultados %}
+                <tr style="background-color: #f9f9f9;">
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">
+                        {{ resultado[0] }}
+                        <br><small style="color: #666;">({{ resultado[1] }})</small>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{{ resultado[2] }} a {{ resultado[3] }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${{ "%.2f"|format(resultado[4]) }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        **{{ resultado[6] }}** <br><small>Nivel: {{ resultado[5] }}</small> </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #007bff;">
+                        {{ resultado[7] }} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <p style="margin-top: 20px; padding: 10px; background-color: #e6f7ff; border-left: 5px solid #007bff;">
+            Para **reservar**, por favor contacta directamente al guía a su número de celular para confirmar su servicio.
+        </p>
+
+    {% else %}
+        <p style="margin-top: 20px; padding: 15px; background-color: #f0f0f0; border-left: 5px solid #ffcc00;">
+            Realiza una búsqueda seleccionando la fecha y el idioma deseado para ver los guías disponibles.
+        </p>
+    {% endif %}
+{% endblock %}

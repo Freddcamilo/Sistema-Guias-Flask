@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Login de Guía{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('menu_principal') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Menú Principal</a>
+    <h1>Acceso para Guías</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" style="max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+        <div style="margin-bottom: 15px;">
+            <label for="licencia" style="display: block; margin-bottom: 5px;">Número de Licencia:</label>
+            <input type="text" id="licencia" name="licencia" required style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label for="password" style="display: block; margin-bottom: 5px;">Contraseña:</label>
+            <input type="password" id="password" name="password" required style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <button type="submit" class="btn" style="background-color: #004c3f; width: 100%; padding: 10px;">Ingresar</button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <p>Guía de Prueba: Licencia **TEST101**, Contraseña **1234**</p>
+        <p style="margin-top: 15px;">
+            ¿Eres un nuevo guía? <a href="{{ url_for('registrar_guia') }}" style="color: #28a745; font-weight: bold;">Regístrate aquí.</a>
+        </p>
+    </div>
+
+{% endblock %}

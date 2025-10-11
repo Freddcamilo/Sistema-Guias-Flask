@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Menú Principal{% endblock %}
+
+{% block content %}
+    <header>
+        <h1>Sistema de Gestión de Guías Turísticos</h1>
+        <p>Machu Picchu - Cusco</p>
+    </header>
+    
+    <h2>Bienvenido. Selecciona tu rol:</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div style="display: flex; gap: 20px; margin-top: 30px;">
+        
+        <a href="{{ url_for('login_guia') }}" class="btn" style="background-color: #004c3f; padding: 15px 30px; font-size: 1.2em;">
+            Soy Guía (Acceder a mi Panel)
+        </a>
+        
+        <a href="{{ url_for('buscar_guias') }}" class="btn" style="background-color: #007bff; padding: 15px 30px; font-size: 1.2em;">
+            Soy Agencia / Público (Buscar Guía)
+        </a>
+        
+    </div>
+
+{% endblock %}
