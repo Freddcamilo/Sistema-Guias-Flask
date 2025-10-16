@@ -6,15 +6,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Configuración
 # --------------------------------------------------------------------------
 app = Flask(__name__)
-app.secret_key = 'tu_clave_secreta_aqui' # ¡CAMBIA ESTO POR UNA CLAVE SEGURA!
+# ¡IMPORTANTE! Cambié la clave secreta levemente para forzar el reinicio en Render
+app.secret_key = 'tu_clave_secreta_aqui_V2' 
 DATABASE = 'machupicchu_guias.db'
 
 # --------------------------------------------------------------------------
 # Conexión a la Base de Datos
 # --------------------------------------------------------------------------
 def conectar_db():
-    # Se recomienda usar 'with sqlite3.connect' para un manejo más seguro,
-    # pero mantendremos la función para compatibilidad con tu código actual.
     return sqlite3.connect(DATABASE)
 
 # --------------------------------------------------------------------------
@@ -27,7 +26,7 @@ def menu_principal():
     return render_template('menu_principal.html')
 
 # --------------------------------------------------------------------------
-# Funciones de Guía
+# Funciones de Guía (Login, Logout, Registro, Panel)
 # --------------------------------------------------------------------------
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -39,12 +38,12 @@ def login_guia():
 
         conn = conectar_db()
         cursor = conn.cursor()
+        # La consulta ahora usa 'licencia' que fue corregida en db_manager.py
         cursor.execute("SELECT password, nombre FROM GUIAS WHERE licencia = ?", (licencia,))
         guia_data = cursor.fetchone()
         conn.close()
 
         if guia_data and check_password_hash(guia_data[0], password):
-            # Login exitoso
             session['logged_in'] = True
             session['licencia'] = licencia
             session['nombre'] = guia_data[1]
@@ -72,8 +71,7 @@ def registrar_guia():
         password = request.form['password']
         celular = request.form['celular']
         tarifa_base = request.form['tarifa_base']
-        # Si implementaste las observaciones, agrégala aquí:
-        # observaciones = request.form.get('observaciones', '') 
+        # observaciones ya fue incluida en db_manager.py
         
         hashed_password = generate_password_hash(password)
 
@@ -108,42 +106,38 @@ def panel_guia():
 
 
 # --------------------------------------------------------------------------
-# NUEVAS RUTAS: Reporte y Eliminación de Guías (ADMINISTRADOR)
+# Funciones de Reporte y Eliminación (ADMIN/Público)
 # --------------------------------------------------------------------------
 
 @app.route('/admin/reporte_guias')
 def reporte_guias():
-    # NOTA: En un sistema real, esta ruta DEBERÍA tener un check de 'if session['rol'] == 'admin''
-    
+    # Esta ruta es usada como listado público/agencia y por la administración
     conn = conectar_db()
     cursor = conn.cursor()
     
-    # Selecciona todos los guías. ¡guia_id es CRUCIAL!
+    # La consulta ya está corregida y coincide con db_manager.py
     cursor.execute("SELECT guia_id, licencia, nombre, celular, tarifa_base FROM GUIAS")
     guias = cursor.fetchall()
     conn.close()
 
-    # Necesitarás crear este archivo en la carpeta 'templates'
     return render_template('reporte_guias.html', guias=guias)
 
 
 @app.route('/admin/eliminar_guia/<int:guia_id>', methods=['POST'])
 def eliminar_guia(guia_id):
-    # NOTA: En un sistema real, esta ruta DEBERÍA tener un check de 'if session['rol'] == 'admin''
+    # En un sistema real, esta ruta DEBERÍA estar protegida por un login de 'admin'.
     
     conn = conectar_db()
     cursor = conn.cursor()
     try:
-        # **IMPORTANTE:** Borra primero de las tablas secundarias (ej: IDIOMAS, RESERVAS)
-        # para evitar el error de clave foránea. Si no tienes estas tablas, omite esta línea.
-        # EJEMPLO: cursor.execute("DELETE FROM GUIA_IDIOMAS WHERE guia_id = ?", (guia_id,))
-
-        # Borra el guía de la tabla principal
+        # Se asume que las tablas relacionadas (GUIAS_IDIOMAS, DISPONIBILIDAD, RESERVAS)
+        # tienen ON DELETE CASCADE, por lo que borrar el guía de la tabla principal
+        # también borra los datos relacionados.
         cursor.execute("DELETE FROM GUIAS WHERE guia_id = ?", (guia_id,))
         conn.commit()
         flash(f'Guía ID {guia_id} eliminado con éxito.', 'success')
     except Exception as e:
-        flash(f'Error al eliminar el guía: {e}. Asegúrate de borrar datos relacionados primero.', 'error')
+        flash(f'Error al eliminar el guía: {e}.', 'error')
     finally:
         conn.close()
     
@@ -153,4 +147,5 @@ def eliminar_guia(guia_id):
 # --------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    # Usamos debug=True para el desarrollo local
     app.run(debug=True)
