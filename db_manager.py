@@ -2,32 +2,33 @@ import os
 import psycopg2
 from werkzeug.security import generate_password_hash
 
-# --------------------------------------------------------------------------
-# Conexión a PostgreSQL (usando la variable de entorno de Render)
-# --------------------------------------------------------------------------
-# Esta variable es proporcionada por Render cuando configuras una PostgreSQL DB
+# La URL de la DB de Render se lee desde las variables de entorno
 DATABASE_URL = os.environ.get('DATABASE_URL') 
 
 def conectar_db():
     if not DATABASE_URL:
-        # En caso de que se ejecute localmente sin la URL de Render, usamos un placeholder.
-        # NO NECESITAS ESTO, pero lo dejamos como seguridad.
-        # Si se ejecuta en Render, usará DATABASE_URL
-        raise ValueError("DATABASE_URL no está configurada. ¿Estás en Render?")
-
-    # Conexión real a PostgreSQL
-    return psycopg2.connect(DATABASE_URL)
+        # Si no hay URL (prueba local sin la variable), retorna None
+        return None 
+            
+    # Conexión real a PostgreSQL. Usamos sslmode='require' por ser la nube.
+    return psycopg2.connect(DATABASE_URL, sslmode='require')
 
 def inicializar_db():
     conn = None
     try:
         conn = conectar_db()
-        cursor = conn.cursor()
+        
+        # Si la conexión falló (porque es local y no definimos la variable), salimos.
+        if conn is None:
+            print("ADVERTENCIA: No se pudo conectar a PostgreSQL (DATABASE_URL no definida). Saltando inicialización.")
+            return
 
+        cursor = conn.cursor()
+        
         print("Conectado a PostgreSQL. Creando/verificando tablas...")
 
         # --------------------------------------------------------------------------
-        # 1. Tabla GUIAS (ATENCIÓN: Se usa sintaxis de PostgreSQL)
+        # 1. Tabla GUIAS (PostgreSQL)
         # --------------------------------------------------------------------------
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS GUIAS (
@@ -42,15 +43,67 @@ def inicializar_db():
         """)
         print("Tabla GUIAS creada/verificada.")
 
-        # (Otras tablas - IDIOMAS, GUIAS_IDIOMAS, DISPONIBILIDAD, RESERVAS - irían aquí 
-        # usando sintaxis de PostgreSQL similar a la de GUIAS)
-
-        # --- Simplificación para el ejercicio (sólo GUIAS) ---
+        # --------------------------------------------------------------------------
+        # 2. Tabla IDIOMAS (Maestra - PostgreSQL)
+        # --------------------------------------------------------------------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS IDIOMAS (
+                idioma_id SERIAL PRIMARY KEY,
+                nombre TEXT UNIQUE NOT NULL
+            );
+        """)
+        print("Tabla IDIOMAS creada/verificada.")
 
         # --------------------------------------------------------------------------
-        # Datos de Prueba
+        # 3. Tabla GUIA_IDIOMAS (Relación Muchos a Muchos - PostgreSQL)
         # --------------------------------------------------------------------------
-
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS GUIAS_IDIOMAS (
+                guia_id INTEGER REFERENCES GUIAS(guia_id) ON DELETE CASCADE,
+                idioma_id INTEGER REFERENCES IDIOMAS(idioma_id) ON DELETE CASCADE,
+                PRIMARY KEY (guia_id, idioma_id)
+            );
+        """)
+        print("Tabla GUIAS_IDIOMAS creada/verificada.")
+        
+        # --------------------------------------------------------------------------
+        # 4. Tabla DISPONIBILIDAD (Para reservas - PostgreSQL)
+        # --------------------------------------------------------------------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS DISPONIBILIDAD (
+                disponibilidad_id SERIAL PRIMARY KEY,
+                guia_id INTEGER NOT NULL REFERENCES GUIAS(guia_id) ON DELETE CASCADE,
+                fecha TEXT NOT NULL,
+                hora_inicio TEXT NOT NULL,
+                hora_fin TEXT NOT NULL,
+                estado TEXT DEFAULT 'Disponible',
+                UNIQUE (guia_id, fecha, hora_inicio)
+            );
+        """)
+        print("Tabla DISPONIBILIDAD creada/verificada.")
+        
+        # --------------------------------------------------------------------------
+        # 5. Tabla RESERVAS (PostgreSQL)
+        # --------------------------------------------------------------------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS RESERVAS (
+                reserva_id SERIAL PRIMARY KEY,
+                guia_id INTEGER NOT NULL REFERENCES GUIAS(guia_id) ON DELETE CASCADE,
+                fecha TEXT NOT NULL,
+                hora_inicio TEXT NOT NULL,
+                duracion_horas NUMERIC NOT NULL,
+                nombre_cliente TEXT NOT NULL,
+                contacto_cliente TEXT,
+                estado TEXT DEFAULT 'Pendiente',
+                costo_total NUMERIC NOT NULL
+            );
+        """)
+        print("Tabla RESERVAS creada/verificada.")
+        
+        # --------------------------------------------------------------------------
+        # Datos de Prueba (usando %s para PostgreSQL)
+        # --------------------------------------------------------------------------
+        
         # Insertar Guía de Prueba
         guia_test_licencia = 'TEST101'
         cursor.execute("SELECT guia_id FROM GUIAS WHERE licencia = %s", (guia_test_licencia,))
@@ -61,12 +114,26 @@ def inicializar_db():
                 VALUES (%s, %s, %s, %s, %s)
             """, (guia_test_licencia, 'Guía de Prueba', hashed_password, 60.00, '+51999888777'))
             print("Guía de prueba insertado.")
-        else:
-            print("Guía de prueba ya existe.")
+        
+        # Insertar Idiomas Maestros
+        idiomas_maestros = ['Español', 'Inglés', 'Quechua', 'Portugués', 'Alemán']
+        for idioma in idiomas_maestros:
+            cursor.execute("SELECT idioma_id FROM IDIOMAS WHERE nombre = %s", (idioma,))
+            if cursor.fetchone() is None:
+                cursor.execute("INSERT INTO IDIOMAS (nombre) VALUES (%s)", (idioma,))
+        
+        # Asignar Idiomas al Guía de Prueba
+        guia_test_id = cursor.execute("SELECT guia_id FROM GUIAS WHERE licencia = %s", (guia_test_licencia,)).fetchone()[0]
+        
+        for idioma_nombre in ['Español', 'Inglés']:
+            idioma_id = cursor.execute("SELECT idioma_id FROM IDIOMAS WHERE nombre = %s", (idioma_nombre,)).fetchone()[0]
+            cursor.execute("SELECT guia_id FROM GUIAS_IDIOMAS WHERE guia_id = %s AND idioma_id = %s", (guia_test_id, idioma_id))
+            if cursor.fetchone() is None:
+                cursor.execute("INSERT INTO GUIAS_IDIOMAS (guia_id, idioma_id) VALUES (%s, %s)", (guia_test_id, idioma_id))
 
         conn.commit()
         print("Base de datos inicializada con éxito.")
-
+        
     except psycopg2.Error as e:
         print(f"Error de PostgreSQL al inicializar la DB: {e}")
         if conn:
@@ -78,8 +145,4 @@ def inicializar_db():
             conn.close()
 
 if __name__ == '__main__':
-    # Esto solo se ejecutará en Render si se configura
-    if os.environ.get('DATABASE_URL'):
-        inicializar_db()
-    else:
-        print("ADVERTENCIA: No se puede inicializar la DB de PostgreSQL localmente sin DATABASE_URL.")
+    inicializar_db()

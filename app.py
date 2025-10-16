@@ -2,14 +2,13 @@ import os
 import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
-# from psycopg2 import sql # No es estrictamente necesario si usamos %s
 
 # --------------------------------------------------------------------------
 # Configuración
 # --------------------------------------------------------------------------
 app = Flask(__name__)
-# Usamos una clave secreta con un cambio para forzar el reinicio en Render
-app.secret_key = 'tu_clave_secreta_aqui_V4' 
+# Usamos una clave secreta final para asegurar la sesion
+app.secret_key = 'tu_clave_secreta_aqui_FINAL' 
 
 # La URL de la DB de Render se lee desde las variables de entorno
 DATABASE_URL = os.environ.get('DATABASE_URL') 
@@ -19,8 +18,9 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 # --------------------------------------------------------------------------
 def conectar_db():
     if not DATABASE_URL:
-        # Esto solo aparecerá si intentas correr el app.py localmente sin DATABASE_URL
-        raise ValueError("DATABASE_URL no está configurada. Ejecuta la app en Render.")
+        # En el ambiente de Render, si la URL no existe, el programa FALLARÁ
+        # localmente, si no existe, solo generamos un error para la consola.
+        raise ValueError("FATAL: DATABASE_URL no está configurada. ¿Corriendo en Render sin la variable?")
     
     # Conexión real a PostgreSQL. Usamos sslmode='require' por ser la nube.
     return psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -62,6 +62,9 @@ def login_guia():
                 return redirect(url_for('panel_guia'))
             else:
                 flash('Licencia o Contraseña incorrecta.', 'error')
+        except ValueError as ve:
+             # Error de conexión que ocurre si la variable no está definida
+            flash(f'Error de configuración: {ve}. Contacte al administrador.', 'error')
         except Exception as e:
             flash(f'Error de conexión o consulta: {e}', 'error')
         finally:
@@ -102,6 +105,8 @@ def registrar_guia():
             conn.commit()
             flash(f'Guía "{nombre}" (Licencia: {licencia}) registrado con éxito. ¡Ya puedes iniciar sesión!', 'success')
             return redirect(url_for('login_guia'))
+        except ValueError as ve:
+             flash(f'Error de configuración: {ve}. Contacte al administrador.', 'error')
         except psycopg2.IntegrityError:
             flash('El número de Licencia ya está registrado.', 'error')
         except Exception as e:
@@ -137,6 +142,8 @@ def reporte_guias():
         # La consulta usa sintaxis de PostgreSQL
         cursor.execute("SELECT guia_id, licencia, nombre, celular, tarifa_base FROM GUIAS")
         guias = cursor.fetchall()
+    except ValueError as ve:
+         flash(f'Error de configuración: {ve}. Contacte al administrador.', 'error')
     except Exception as e:
         flash(f'Error al cargar el reporte: {e}', 'error')
     finally:
@@ -157,6 +164,8 @@ def eliminar_guia(guia_id):
         cursor.execute("DELETE FROM GUIAS WHERE guia_id = %s", (guia_id,))
         conn.commit()
         flash(f'Guía ID {guia_id} eliminado con éxito.', 'success')
+    except ValueError as ve:
+         flash(f'Error de configuración: {ve}. Contacte al administrador.', 'error')
     except Exception as e:
         flash(f'Error al eliminar el guía: {e}.', 'error')
         if conn:
@@ -169,7 +178,6 @@ def eliminar_guia(guia_id):
 
 # --------------------------------------------------------------------------
 
-# Asegúrate de que esta parte no se ejecute si Render lo corre con gunicorn
 if __name__ == '__main__':
-    print("ADVERTENCIA: Iniciando app localmente. Fallará si no hay DATABASE_URL en el entorno local.")
+    print("ADVERTENCIA: Iniciando app localmente. Fallará si no hay DATABASE_URL configurada localmente.")
     app.run(debug=True)
