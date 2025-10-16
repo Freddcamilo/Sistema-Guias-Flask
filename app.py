@@ -1,20 +1,29 @@
-import sqlite3
+import os
+import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
+# from psycopg2 import sql # No es estrictamente necesario si usamos %s
 
 # --------------------------------------------------------------------------
 # Configuración
 # --------------------------------------------------------------------------
 app = Flask(__name__)
-# ¡IMPORTANTE! Cambié la clave secreta levemente para forzar el reinicio en Render
-app.secret_key = 'tu_clave_secreta_aqui_V2' 
-DATABASE = 'machupicchu_guias.db'
+# Usamos una clave secreta con un cambio para forzar el reinicio en Render
+app.secret_key = 'tu_clave_secreta_aqui_V4' 
+
+# La URL de la DB de Render se lee desde las variables de entorno
+DATABASE_URL = os.environ.get('DATABASE_URL') 
 
 # --------------------------------------------------------------------------
-# Conexión a la Base de Datos
+# Conexión a la Base de Datos (PostgreSQL)
 # --------------------------------------------------------------------------
 def conectar_db():
-    return sqlite3.connect(DATABASE)
+    if not DATABASE_URL:
+        # Esto solo aparecerá si intentas correr el app.py localmente sin DATABASE_URL
+        raise ValueError("DATABASE_URL no está configurada. Ejecuta la app en Render.")
+    
+    # Conexión real a PostgreSQL. Usamos sslmode='require' por ser la nube.
+    return psycopg2.connect(DATABASE_URL, sslmode='require')
 
 # --------------------------------------------------------------------------
 # Rutas Principales
@@ -36,21 +45,28 @@ def login_guia():
         licencia = request.form['licencia']
         password = request.form['password']
 
-        conn = conectar_db()
-        cursor = conn.cursor()
-        # La consulta ahora usa 'licencia' que fue corregida en db_manager.py
-        cursor.execute("SELECT password, nombre FROM GUIAS WHERE licencia = ?", (licencia,))
-        guia_data = cursor.fetchone()
-        conn.close()
-
-        if guia_data and check_password_hash(guia_data[0], password):
-            session['logged_in'] = True
-            session['licencia'] = licencia
-            session['nombre'] = guia_data[1]
-            flash(f'Bienvenido(a), {guia_data[1]}.', 'success')
-            return redirect(url_for('panel_guia'))
-        else:
-            flash('Licencia o Contraseña incorrecta.', 'error')
+        conn = None
+        try:
+            conn = conectar_db()
+            cursor = conn.cursor()
+            
+            # Usamos %s para los parámetros en PostgreSQL
+            cursor.execute("SELECT password, nombre FROM GUIAS WHERE licencia = %s", (licencia,))
+            guia_data = cursor.fetchone()
+            
+            if guia_data and check_password_hash(guia_data[0], password):
+                session['logged_in'] = True
+                session['licencia'] = licencia
+                session['nombre'] = guia_data[1]
+                flash(f'Bienvenido(a), {guia_data[1]}.', 'success')
+                return redirect(url_for('panel_guia'))
+            else:
+                flash('Licencia o Contraseña incorrecta.', 'error')
+        except Exception as e:
+            flash(f'Error de conexión o consulta: {e}', 'error')
+        finally:
+            if conn:
+                conn.close()
 
     return render_template('login_guia.html')
 
@@ -71,27 +87,28 @@ def registrar_guia():
         password = request.form['password']
         celular = request.form['celular']
         tarifa_base = request.form['tarifa_base']
-        # observaciones ya fue incluida en db_manager.py
         
         hashed_password = generate_password_hash(password)
 
-        conn = conectar_db()
-        cursor = conn.cursor()
+        conn = None
         try:
+            conn = conectar_db()
+            cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO GUIAS (licencia, nombre, password, tarifa_base, celular) 
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s)
             """, (licencia, nombre, hashed_password, tarifa_base, celular))
             
             conn.commit()
             flash(f'Guía "{nombre}" (Licencia: {licencia}) registrado con éxito. ¡Ya puedes iniciar sesión!', 'success')
             return redirect(url_for('login_guia'))
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
             flash('El número de Licencia ya está registrado.', 'error')
         except Exception as e:
             flash(f'Ocurrió un error al registrar el guía: {e}', 'error')
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     return render_template('registro_guia.html')
 
@@ -111,41 +128,48 @@ def panel_guia():
 
 @app.route('/admin/reporte_guias')
 def reporte_guias():
-    # Esta ruta es usada como listado público/agencia y por la administración
-    conn = conectar_db()
-    cursor = conn.cursor()
-    
-    # La consulta ya está corregida y coincide con db_manager.py
-    cursor.execute("SELECT guia_id, licencia, nombre, celular, tarifa_base FROM GUIAS")
-    guias = cursor.fetchall()
-    conn.close()
+    conn = None
+    guias = []
+    try:
+        conn = conectar_db()
+        cursor = conn.cursor()
+        
+        # La consulta usa sintaxis de PostgreSQL
+        cursor.execute("SELECT guia_id, licencia, nombre, celular, tarifa_base FROM GUIAS")
+        guias = cursor.fetchall()
+    except Exception as e:
+        flash(f'Error al cargar el reporte: {e}', 'error')
+    finally:
+        if conn:
+            conn.close()
 
     return render_template('reporte_guias.html', guias=guias)
 
 
 @app.route('/admin/eliminar_guia/<int:guia_id>', methods=['POST'])
 def eliminar_guia(guia_id):
-    # En un sistema real, esta ruta DEBERÍA estar protegida por un login de 'admin'.
-    
-    conn = conectar_db()
-    cursor = conn.cursor()
+    conn = None
     try:
-        # Se asume que las tablas relacionadas (GUIAS_IDIOMAS, DISPONIBILIDAD, RESERVAS)
-        # tienen ON DELETE CASCADE, por lo que borrar el guía de la tabla principal
-        # también borra los datos relacionados.
-        cursor.execute("DELETE FROM GUIAS WHERE guia_id = ?", (guia_id,))
+        conn = conectar_db()
+        cursor = conn.cursor()
+        
+        # Eliminación usando sintaxis de PostgreSQL y %s
+        cursor.execute("DELETE FROM GUIAS WHERE guia_id = %s", (guia_id,))
         conn.commit()
         flash(f'Guía ID {guia_id} eliminado con éxito.', 'success')
     except Exception as e:
         flash(f'Error al eliminar el guía: {e}.', 'error')
+        if conn:
+            conn.rollback()
     finally:
-        conn.close()
+        if conn:
+            conn.close()
     
-    # Redirige de vuelta al reporte
     return redirect(url_for('reporte_guias'))
 
 # --------------------------------------------------------------------------
 
+# Asegúrate de que esta parte no se ejecute si Render lo corre con gunicorn
 if __name__ == '__main__':
-    # Usamos debug=True para el desarrollo local
+    print("ADVERTENCIA: Iniciando app localmente. Fallará si no hay DATABASE_URL en el entorno local.")
     app.run(debug=True)
