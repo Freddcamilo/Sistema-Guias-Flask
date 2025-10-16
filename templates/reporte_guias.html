@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Guías - Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .flash-success { background-color: #d4edda; color: #155724; padding: 10px; border: 1px solid #c3e6cb; margin-bottom: 15px; }
+        .flash-error { background-color: #f8d7da; color: #721c24; padding: 10px; border: 1px solid #f5c6cb; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Guías Registrados</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <a href="{{ url_for('menu_principal') }}">← Volver al Menú Principal</a>
+
+    {% if guias %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Licencia</th>
+                    <th>Nombre</th>
+                    <th>Celular</th>
+                    <th>Tarifa Base</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for guia in guias %}
+                <tr>
+                    <td>{{ guia[0] }}</td> <td>{{ guia[1] }}</td> <td>{{ guia[2] }}</td> <td>{{ guia[3] }}</td> <td>${{ "%.2f"|format(guia[4]) }}</td> <td>
+                        <form method="POST" action="{{ url_for('eliminar_guia', guia_id=guia[0]) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar al guía {{ guia[2] }}? ESTA ACCIÓN NO SE PUEDE DESHACER.');">
+                            <button type="submit" style="background-color: red; color: white; border: none; padding: 5px 10px; cursor: pointer;">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay guías registrados en la base de datos.</p>
+    {% endif %}
+
+</body>
+</html>
