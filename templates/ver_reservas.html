@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Mis Reservas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reservas Asignadas</h1>
+        <p>Aquí se mostraría la tabla de reservas que te han sido asignadas.</p>
+        <p><a href="{{ url_for('panel_guia') }}">← Volver al Panel del Guía</a></p>
+    </div>
+</body>
+</html>

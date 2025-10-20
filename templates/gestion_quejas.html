@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Quejas - Admin</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2><i class="fas fa-gavel text-danger"></i> Moderación de Quejas Públicas</h2>
+        <p class="text-muted">Revise, investigue y actualice el estado de las quejas registradas contra los guías. **La eliminación es permanente.**</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if quejas %}
+            <ul class="list-group">
+                {% for queja in quejas %}
+                    <li class="list-group-item mb-4 shadow-sm border border-danger">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Queja #{{ queja[0] }}</h5>
+                            <small class="text-muted">Reportada: {{ queja[3] }}</small>
+                        </div>
+
+                        <p class="mt-2 mb-1">
+                            **Guía Afectado:** <span class="text-danger">{{ queja[2] }} (Lic. {{ queja[1] }})</span>
+                        </p>
+                        <p class="mb-1">
+                            **Reportado por:** <span class="text-primary">{{ queja[6] or 'Anónimo' }}</span>
+                        </p>
+
+                        <p class="mb-1 mt-2">
+                            **Descripción:**
+                            <span class="d-block p-2 border rounded bg-light">{{ queja[4] }}</span>
+                        </p>
+                        
+                        <hr>
+                        
+                        <div class="d-flex align-items-center justify-content-between">
+                            
+                            <div class="d-flex align-items-center">
+                                <strong class="mr-2">Estado Actual:</strong>
+                                {% set badge_class = 'badge-warning' if queja[5] == 'pendiente' else ('badge-info' if queja[5] == 'en revision' else 'badge-success') %}
+                                <span class="badge {{ badge_class }} badge-lg mr-4">{{ queja[5].title() }}</span>
+
+                                <form method="POST" class="form-inline" id="form-{{ queja[0] }}">
+                                    <label for="estado-{{ queja[0] }}" class="mr-2">Cambiar a:</label>
+                                    <select class="form-control form-control-sm" name="nuevo_estado" id="estado-{{ queja[0] }}">
+                                        {% for estado in estados_posibles %}
+                                            <option value="{{ estado }}" 
+                                                    {% if estado == queja[5] %}disabled{% endif %} 
+                                                    data-url="{{ url_for('actualizar_estado', queja_id=queja[0], nuevo_estado=estado) }}">
+                                                {{ estado.title() }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </div>
+                            
+                            <form method="POST" action="{{ url_for('eliminar_queja', queja_id=queja[0]) }}" onsubmit="return confirm('⚠️ ¡ADVERTENCIA! ¿Está seguro de que desea ELIMINAR permanentemente la queja #{{ queja[0] }}? Esta acción no se puede deshacer.');">
+                                <button type="submit" class="btn btn-danger btn-sm ml-4">
+                                    <i class="fas fa-trash-alt"></i> Eliminar Queja
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-success text-center" role="alert">
+                ¡No hay quejas pendientes de revisión!
+            </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{{ url_for('panel_admin') }}" class="btn btn-secondary">Volver al Panel de Administrador</a>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.form-inline').forEach(form => {
+            const selectElement = form.querySelector('select');
+            
+            selectElement.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const url = selectedOption.getAttribute('data-url');
+                
+                if (url) {
+                    form.action = url; 
+                    form.submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,99 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <title>Menú Principal</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-        h1 {
-            color: #173f32; /* Verde Oscuro */
-            margin-bottom: 5px;
-        }
-        h2 {
-            color: #555;
-            font-size: 1.1em;
-            margin-bottom: 30px;
-        }
-        .role-button {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            color: white; /* Texto blanco para todos los botones */
-        }
-        .guia-button {
-            background-color: #1a5e3a; /* Verde para Guía */
-        }
-        .guia-button:hover {
-            background-color: #114d2e;
-        }
-        .publico-button {
-            background-color: #007bff; /* Azul para Público */
-        }
-        .publico-button:hover {
-            background-color: #0056b3;
-        }
-        .flash-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            border: 1px solid #ffeeba;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 10px;
-            border: 1px solid #c3e6cb;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Sistema de Gestión de Guías Turísticos</h1>
-        <h2>Machu Picchu - Cusco</h2>
+    <div class="container mt-5">
+        <div class="jumbotron text-center bg-info text-white">
+            <h1 class="display-4">Sistema de Gestión de Guías Turísticos</h1>
+            <p class="lead">Bienvenido al portal central de información, registro y administración.</p>
+        </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="flash-{{ category }}">{{ message }}</div>
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <p>Bienvenido. Selecciona tu rol:</p>
+        <div class="row">
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow">
+                    <div class="card-header bg-success text-white">
+                        <h3>Información y Servicios Públicos</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Busque guías disponibles por fecha e idioma o reporte una queja.</p>
+                        <a href="{{ url_for('buscar_guia') }}" class="btn btn-success btn-block mb-2">
+                            <i class="fas fa-search"></i> Buscar Guía Disponible
+                        </a>
+                        <a href="{{ url_for('reportar_queja_publico') }}" class="btn btn-danger btn-block">
+                            <i class="fas fa-exclamation-triangle"></i> Reportar Queja de un Guía
+                        </a>
+                    </div>
+                </div>
+            </div>
 
-        <a href="{{ url_for('login_guia') }}" class="role-button guia-button">
-            Soy Guía (Acceder a mi Panel)
-        </a>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Acceso de Guías y Administradores</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if session.get('logged_in') %}
+                            {% if session.get('user_rol') == 'admin' %}
+                                <p class="card-text">Bienvenido, Administrador.</p>
+                                <a href="{{ url_for('panel_admin') }}" class="btn btn-primary btn-block mb-2">
+                                    <i class="fas fa-users-cog"></i> Ir al Panel de Administrador
+                                </a>
+                            {% else %}
+                                <p class="card-text">Bienvenido, Guía ({{ session.get('user_licencia') }}).</p>
+                                <a href="{{ url_for('panel_guia') }}" class="btn btn-primary btn-block mb-2">
+                                    <i class="fas fa-user-circle"></i> Ir a Mi Panel
+                                </a>
+                            {% endif %}
+                            <a href="{{ url_for('logout') }}" class="btn btn-warning btn-block">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                            </a>
+                        {% else %}
+                            <p class="card-text">Regístrese o inicie sesión para gestionar su perfil, idiomas y disponibilidad.</p>
+                            <a href="{{ url_for('login_guia') }}" class="btn btn-primary btn-block mb-2">
+                                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                            </a>
+                            <a href="{{ url_for('registro_guia') }}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-user-plus"></i> Registrarme como Guía
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
 
-        <a href="{{ url_for('reporte_guias') }}" class="role-button publico-button">
-            Soy Agencia / Público (Buscar Guía)
-        </a>
+        </div>
     </div>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> 
 </body>
 </html>

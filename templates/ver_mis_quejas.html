@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Quejas - Guía {{ licencia }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Mis Quejas Registradas</h2>
+        <p class="text-muted">A continuación se listan todas las quejas que han sido registradas bajo su licencia. El estado de la queja es gestionado por la administración.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if quejas %}
+            <ul class="list-group">
+                {% for queja in quejas %}
+                    <li class="list-group-item mb-3 shadow-sm">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h5 class="mb-1">Reporte ID: {{ queja[0] }} 
+                                {% set badge_class = 'badge-warning' if queja[3] == 'pendiente' else ('badge-info' if queja[3] == 'en revision' else 'badge-success') %}
+                                <span class="badge {{ badge_class }} ml-2">{{ queja[3].title() }}</span>
+                            </h5>
+                            <small class="text-muted">{{ queja[1] }}</small>
+                        </div>
+                        
+                        <p class="mb-2 mt-2">
+                            **Reportado por:** <span class="text-primary">{{ queja[4] or 'N/A' }}</span>
+                        </p>
+
+                        <p class="mb-1">
+                            **Descripción de la Queja:**
+                            <span class="d-block p-2 border rounded bg-light mt-1">{{ queja[2] }}</span>
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-success text-center" role="alert">
+                ¡Felicidades! No hay quejas registradas actualmente contra su licencia.
+            </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{{ url_for('panel_guia') }}" class="btn btn-secondary">Volver al Panel de Guía</a>
+        </div>
+    </div>
+</body>
+</html>

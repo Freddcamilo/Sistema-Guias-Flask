@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Idiomas (Admin)</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { max-width: 800px; margin-top: 50px; margin-bottom: 50px; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid #28a745; }
+        h2 { color: #28a745; font-weight: bold; margin-bottom: 30px; }
+        .idioma-item { border: 1px solid #ced4da; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: space-between; }
+        .idioma-nombre { font-size: 1.1rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center"><i class="fas fa-tools"></i> Gestión de Idiomas (Administrador)</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h4><i class="fas fa-plus-circle"></i> Agregar Nuevo Idioma</h4>
+        <form method="POST" action="{{ url_for('agregar_idioma') }}" class="form-inline mb-4 p-3 border rounded bg-light">
+            <div class="form-group mr-3">
+                <label for="nombre_idioma" class="sr-only">Nombre del Idioma</label>
+                <input type="text" class="form-control" id="nombre_idioma" name="nombre_idioma" placeholder="Ej: Francés, Alemán" required>
+            </div>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check-circle"></i> Agregar
+            </button>
+        </form>
+
+        <h4 class="mt-4"><i class="fas fa-list-ul"></i> Idiomas Registrados</h4>
+        
+        {% if not idiomas %}
+            <div class="alert alert-warning text-center">
+                No hay idiomas registrados. Agregue uno usando el formulario de arriba.
+            </div>
+        {% else %}
+            {% for idioma in idiomas %}
+                <div class="idioma-item">
+                    <span class="idioma-nombre" id="nombre-{{ idioma[0] }}">{{ idioma[1] }}</span>
+                    
+                    <div class="d-flex">
+                        <button type="button" class="btn btn-sm btn-info mr-2" data-toggle="modal" data-target="#editModal-{{ idioma[0] }}">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        
+                        <form method="POST" action="{{ url_for('eliminar_idioma', idioma_id=idioma[0]) }}" onsubmit="return confirm('¿Está seguro de que desea eliminar el idioma {{ idioma[1] }}? Se eliminarán todas las asociaciones con los guías.');">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="editModal-{{ idioma[0] }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form method="POST" action="{{ url_for('editar_idioma', idioma_id=idioma[0]) }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editModalLabel">Editar Idioma: {{ idioma[1] }}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="nombre_idioma_edit">Nuevo Nombre:</label>
+                                        <input type="text" class="form-control" id="nombre_idioma_edit" name="nombre_idioma_edit" value="{{ idioma[1] }}" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('panel_admin') }}">← Volver al Panel de Administración</a>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

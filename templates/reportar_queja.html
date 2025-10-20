@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reportar Queja</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Reportar Queja sobre un Guía</h2>
+        <p class="text-muted">Si desea reportar una conducta o un problema con un guía, use el siguiente formulario. La queja será revisada por el administrador.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                Formulario de Queja
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('reportar_queja_publico') }}">
+                    
+                    <div class="form-group">
+                        <label for="licencia_guia">Licencia del Guía Reportado (*):</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="licencia_guia" 
+                               name="licencia_guia" 
+                               value="{{ licencia_guia or '' }}"
+                               placeholder="Ej: A1001"
+                               required>
+                        <small class="form-text text-muted">Asegúrese de ingresar la licencia correcta del guía.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nombre_reportante">Su Nombre (Opcional):</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="nombre_reportante" 
+                               name="nombre_reportante"
+                               value="{{ nombre_reportante or '' }}"
+                               placeholder="Ej: Juan Pérez">
+                        <small class="form-text text-muted">Si no proporciona su nombre, el reporte será anónimo.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion">Descripción de la Queja (*):</label>
+                        <textarea class="form-control" 
+                                  id="descripcion" 
+                                  name="descripcion" 
+                                  rows="5" 
+                                  required>{{ descripcion or '' }}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger btn-block">Registrar Queja</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="{{ url_for('menu_principal') }}" class="btn btn-secondary">Volver al Menú Principal</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administrador</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="jumbotron bg-dark text-white text-center">
+            <h1 class="display-4"><i class="fas fa-users-cog"></i> Panel de Administrador</h1>
+            <p class="lead">Bienvenido, {{ session.get('user_licencia') }}. Control centralizado del sistema.</p>
+            <hr class="my-4 bg-light">
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-user-shield"></i> Gestión de Usuarios (Guías)
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Aprobar nuevos registros, cambiar roles (admin/guía) y gestionar cuentas.</p>
+                        <a href="{{ url_for('gestion_guias') }}" class="btn btn-primary btn-block">
+                            <i class="fas fa-users"></i> Administrar Guías
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-lg">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-globe"></i> Gestión de Idiomas
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Añadir, editar o eliminar los idiomas disponibles en el sistema.</p>
+                        <a href="{{ url_for('gestion_idiomas') }}" class="btn btn-success btn-block">
+                            <i class="fas fa-language"></i> Administrar Catálogo de Idiomas
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-lg">
+                    <div class="card-header bg-danger text-white">
+                        <i class="fas fa-exclamation-circle"></i> **Gestión de Quejas Públicas**
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Revisar, moderar y actualizar el estado de todas las quejas reportadas por el público. </p>
+                        <a href="{{ url_for('gestion_quejas') }}" class="btn btn-danger btn-block">
+                            <i class="fas fa-gavel"></i> Moderar Quejas
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-lg">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="fas fa-id-card-alt"></i> Mi Perfil (Administrador)
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Edita tu información personal, idiomas que dominas y contraseña.</p>
+                        <a href="{{ url_for('editar_mi_perfil') }}" class="btn btn-outline-secondary btn-block mb-2">
+                            <i class="fas fa-user-edit"></i> Editar Mi Perfil
+                        </a>
+                        <a href="{{ url_for('cambiar_contrasena') }}" class="btn btn-outline-secondary btn-block">
+                            <i class="fas fa-key"></i> Cambiar Contraseña
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="mt-5 text-center">
+            <a href="{{ url_for('logout') }}" class="btn btn-warning btn-lg">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+            <a href="{{ url_for('menu_principal') }}" class="btn btn-secondary btn-lg ml-3">
+                <i class="fas fa-home"></i> Volver al Menú Principal
+            </a>
+        </div>
+    </div>
+</body>
+</html>

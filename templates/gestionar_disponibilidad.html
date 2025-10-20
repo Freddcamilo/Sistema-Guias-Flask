@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestionar Disponibilidad</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Gestionar Mi Disponibilidad por Fecha</h2>
+        <p class="text-muted">Añade las fechas y horarios específicos en los que estás libre para trabajar.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="mb-4">
+            {% if session.user_rol == 'admin' %}
+                <a href="{{ url_for('panel_admin') }}" class="btn btn-secondary">Volver al Panel</a>
+            {% else %}
+                <a href="{{ url_for('panel_guia') }}" class="btn btn-secondary">Volver al Panel</a>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        Añadir Disponibilidad
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('agregar_fecha_disponible') }}">
+                            <div class="form-group">
+                                <label for="fecha">Fecha Específica:</label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="fecha" 
+                                       name="fecha" 
+                                       value="{{ fecha_actual }}" 
+                                       required>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="hora_inicio_fecha">Hora de Inicio:</label>
+                                    <input type="time" 
+                                           class="form-control" 
+                                           id="hora_inicio_fecha" 
+                                           name="hora_inicio" 
+                                           required>
+                                </div>
+                                <div class="col">
+                                    <label for="hora_fin_fecha">Hora de Fin:</label>
+                                    <input type="time" 
+                                           class="form-control" 
+                                           id="hora_fin_fecha" 
+                                           name="hora_fin" 
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-info btn-block mt-3">Añadir Fecha</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        Fechas de Disponibilidad Añadidas
+                    </div>
+                    <div class="card-body">
+                        {% if fechas_especificas %}
+                            <ul class="list-group list-group-flush">
+                            {% for fecha in fechas_especificas %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                    <div>
+                                        <p class="mb-0"><strong>{{ fecha.fecha }}</strong></p> 
+                                        <small class="text-muted">{{ fecha.inicio[:5] }} - {{ fecha.fin[:5] }}</small>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('eliminar_fecha_disponible', fecha_id=fecha.id) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar esta fecha?');">X</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No tienes fechas de disponibilidad añadidas (solo se muestran fechas a partir de hoy).</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

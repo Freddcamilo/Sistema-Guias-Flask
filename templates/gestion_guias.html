@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Guías</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2><i class="fas fa-users"></i> Gestión de Guías</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <table class="table table-striped table-hover mt-4">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Licencia</th>
+                    <th>Nombre</th>
+                    <th>Rol</th>
+                    <th>Registro</th>
+                    <th>Aprobación</th>
+                    <th>Acciones Rol</th>
+                    <th>Acciones Cuenta</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for guia in guias %}
+                    <tr>
+                        <td>{{ guia[0] }}</td> <td>{{ guia[1] }}</td> <td>
+                            {% set rol_badge = 'badge-danger' if guia[2] == 'admin' else 'badge-info' %}
+                            <span class="badge {{ rol_badge }}">{{ guia[2]|upper }}</span>
+                        </td>
+                        <td>{{ guia[4] }}</td> <td>
+                            {% if guia[3] == 1 %}
+                                <span class="badge badge-success">APROBADO</span>
+                            {% else %}
+                                <span class="badge badge-warning">PENDIENTE</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="d-flex flex-column">
+                            {% if guia[2] == 'guia' %}
+                                <form method="POST" action="{{ url_for('promover_guia', licencia=guia[0]) }}" class="d-inline mb-1">
+                                    <button type="submit" class="btn btn-primary btn-sm btn-block">
+                                        <i class="fas fa-user-plus"></i> Promover a Admin
+                                    </button>
+                                </form>
+                            {% elif guia[0] != 'ADMIN001' %}
+                                <form method="POST" action="{{ url_for('degradar_guia', licencia=guia[0]) }}" class="d-inline mb-1">
+                                    <button type="submit" class="btn btn-warning btn-sm btn-block">
+                                        <i class="fas fa-user-minus"></i> Degradar a Guía
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+
+                        <td class="d-flex flex-column">
+                            {% if guia[3] == 1 %}
+                                <form method="POST" action="{{ url_for('toggle_aprobacion', licencia=guia[0], estado=0) }}" class="d-inline mb-1">
+                                    <button type="submit" class="btn btn-secondary btn-sm btn-block">
+                                        <i class="fas fa-times-circle"></i> Desaprobar
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form method="POST" action="{{ url_for('toggle_aprobacion', licencia=guia[0], estado=1) }}" class="d-inline mb-1">
+                                    <button type="submit" class="btn btn-success btn-sm btn-block">
+                                        <i class="fas fa-check-circle"></i> Aprobar
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            {% if guia[0] != 'ADMIN001' %}
+                                <form method="POST" action="{{ url_for('eliminar_guia_ruta', licencia=guia[0]) }}" class="d-inline" onsubmit="return confirm('¿Está seguro de que desea eliminar la cuenta de {{ guia[1] }}?');">
+                                    <button type="submit" class="btn btn-danger btn-sm btn-block">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="mt-4">
+            <a href="{{ url_for('panel_admin') }}" class="btn btn-secondary">Volver al Panel de Administrador</a>
+        </div>
+    </div>
+</body>
+</html>

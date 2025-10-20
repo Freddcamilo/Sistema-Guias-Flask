@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Quejas Comunitarias - Guías</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Quejas Públicas Registradas</h2>
+        <p class="text-muted">Como parte de nuestro compromiso con la transparencia y la calidad, todos los guías pueden visualizar las quejas registradas contra cualquier miembro de la comunidad.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="alert alert-info">
+            La administración es la única responsable de cambiar el estado de estas quejas. Su propósito aquí es **mantenerse informado** y **discutir soluciones comunitarias**.
+        </div>
+
+        {% if quejas %}
+            <ul class="list-group">
+                {% for queja in quejas %}
+                    {% set list_class = 'list-group-item-danger border-danger' if queja[1] == licencia_actual else '' %}
+                    
+                    <li class="list-group-item mb-3 shadow-sm {{ list_class }}">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h5 class="mb-1">
+                                Queja ID: {{ queja[0] }} 
+                                {% set badge_class = 'badge-warning' if queja[5] == 'pendiente' else ('badge-info' if queja[5] == 'en revision' else 'badge-success') %}
+                                <span class="badge {{ badge_class }} ml-2">{{ queja[5].title() }}</span>
+                            </h5>
+                            <small class="text-muted">Fecha: {{ queja[3] }}</small>
+                        </div>
+                        
+                        <h6 class="mt-2 mb-1">
+                            Guía Afectado: 
+                            <strong>{{ queja[2] }} (Lic. {{ queja[1] }})</strong>
+                            {% if queja[1] == licencia_actual %}
+                                <span class="badge badge-danger">ES MI QUEJA</span>
+                            {% endif %}
+                        </h6>
+                        
+                        <p class="mb-2">
+                            **Reportado por:** <span class="text-primary">{{ queja[6] or 'Anónimo' }}</span>
+                        </p>
+
+                        <p class="mb-1">
+                            **Descripción:**
+                            <span class="d-block p-2 border rounded bg-light mt-1">{{ queja[4] }}</span>
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-success text-center" role="alert">
+                No hay quejas registradas actualmente.
+            </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{{ url_for('panel_guia') }}" class="btn btn-secondary">Volver al Panel de Guía</a>
+        </div>
+    </div>
+</body>
+</html>

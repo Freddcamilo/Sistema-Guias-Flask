@@ -1,56 +1,87 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Guía</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="jumbotron bg-light text-center">
+            <h1 class="display-4"><i class="fas fa-user-circle text-primary"></i> Panel de Guía</h1>
+            <p class="lead">Bienvenido de nuevo, Licencia: **{{ session.get('user_licencia') }}**.</p>
+            <hr class="my-4">
+        </div>
 
-{% block title %}Panel de Guía - {{ guia_nombre }}{% endblock %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-{% block content %}
-    <a href="{{ url_for('menu_principal') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Menú Principal</a>
-    
-    <h1>Panel de Control del Guía</h1>
-    <p>
-        ¡Hola, **{{ guia_nombre }}**! (Licencia: {{ licencia_no }})
-        <a href="{{ url_for('logout_guia') }}" class="btn" style="background-color: #dc3545; margin-left: 20px;">
-            Cerrar Sesión
-        </a>
-    </p>
-    
-    <div style="padding: 15px; border: 1px solid #004c3f; border-radius: 5px; background-color: #e6f7ff; margin-bottom: 20px;">
-        <p style="margin: 0;">Tu tarifa base por hora es: **${{ "%.2f"|format(tarifa_base) }}**</p>
+        <div class="row">
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-id-card"></i> Mi Perfil y Contraseña
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Actualiza tu nombre, teléfono, biografía, y cambia tu contraseña.</p>
+                        <a href="{{ url_for('editar_mi_perfil') }}" class="btn btn-outline-primary btn-block mb-2">
+                            <i class="fas fa-edit"></i> Editar Información de Perfil
+                        </a>
+                        <a href="{{ url_for('cambiar_contrasena') }}" class="btn btn-outline-secondary btn-block">
+                            <i class="fas fa-key"></i> Cambiar Contraseña
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-calendar-alt"></i> Gestión de Disponibilidad
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Indica las fechas y horas en las que estás disponible para ser contratado.</p>
+                        <a href="{{ url_for('gestionar_disponibilidad') }}" class="btn btn-outline-info btn-block mb-2">
+                            <i class="fas fa-clock"></i> Administrar Disponibilidad
+                        </a>
+                        <a href="{{ url_for('gestion_mis_idiomas') }}" class="btn btn-outline-success btn-block">
+                            <i class="fas fa-language"></i> Administrar Idiomas
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-danger text-white">
+                        <i class="fas fa-exclamation-triangle"></i> Quejas de la Comunidad
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Visualiza **todas las quejas** registradas por el público contra cualquier guía. Mantente informado y coopera para mantener la calidad.</p>
+                        <a href="{{ url_for('ver_quejas_comunidad') }}" class="btn btn-danger btn-block">
+                            <i class="fas fa-eye"></i> **Ver Quejas Comunitarias**
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-5 text-center">
+            <a href="{{ url_for('logout') }}" class="btn btn-warning btn-lg">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+            <a href="{{ url_for('menu_principal') }}" class="btn btn-secondary btn-lg ml-3">
+                <i class="fas fa-home"></i> Menú Principal
+            </a>
+        </div>
     </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash-message flash-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    {% if guia_nombre == 'Guia Test' %}
-    <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border: 1px solid #f5c6cb; border-radius: 5px; margin-bottom: 20px;">
-        <h2 style="margin-top: 0;">Funciones de Administrador (Guia Test)</h2>
-        <a href="{{ url_for('gestionar_idiomas_maestros') }}" class="btn" style="background-color: #17a2b8;">
-            Añadir Idiomas a la Lista Maestra
-        </a>
-    </div>
-    {% endif %}
-
-    <h2>Opciones del Guía</h2>
-    <div class="panel-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-        
-        <a href="{{ url_for('gestionar_disponibilidad') }}" class="btn" style="background-color: #007bff;">
-            1. Gestionar Mi Disponibilidad
-        </a>
-        
-        <a href="{{ url_for('gestionar_idiomas') }}" class="btn" style="background-color: #28a745;">
-            2. Gestionar Mis Idiomas
-        </a>
-        
-        <a href="{{ url_for('historial_reservas') }}" class="btn" style="background-color: #ff9900;">
-            3. Ver Historial de Reservas
-        </a>
-        
-        <a href="{{ url_for('gestionar_perfil') }}" class="btn" style="background-color: #6c757d;">
-            **4. Modificar Mi Perfil y Tarifa**
-        </a>
-    </div>
-{% endblock %}
+</body>
+</html>

@@ -1,46 +1,65 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Guía Turístico - Simplificado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .container { max-width: 600px; margin: 50px auto; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input[type="text"], 
+        .form-group input[type="password"] { /* Solo mantenemos texto y password */
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn-submit { background-color: #28a745; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }
+        .btn-submit:hover { background-color: #218838; }
+        .flashes { list-style: none; padding: 0; }
+        .flashes li { padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Guía Turístico</h1>
+        <p>Solo necesitamos tu licencia, nombre y contraseña para empezar.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
-{% block title %}Registro de Guía{% endblock %}
+        <form method="POST">
+            <div class="form-group">
+                <label for="licencia">Número de Licencia:</label>
+                <input type="text" id="licencia" name="licencia" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="nombre">Nombre Completo:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
 
-{% block content %}
-    <a href="{{ url_for('login_guia') }}" style="text-decoration: none; color: #004c3f;">&larr; Volver al Inicio de Sesión</a>
-    <h1>Registro de Nuevo Guía</h1>
-    <p>Completa el formulario para unirte a la red de guías turísticos de Machu Picchu.</p>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash-message flash-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+            <button type="submit" class="btn-submit">Registrar Guía</button>
+        </form>
 
-    <form method="POST" style="max-width: 400px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; margin-top: 20px;">
-
-        <label for="nombre" style="display: block; margin-bottom: 5px;">Nombre Completo:</label>
-        <input type="text" id="nombre" name="nombre" required 
-               value="{{ data.nombre if data else '' }}"
-               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-
-        <label for="licencia" style="display: block; margin-bottom: 5px;">Número de Licencia / ID de Guía:</label>
-        <input type="text" id="licencia" name="licencia" required 
-               value="{{ data.licencia if data else '' }}"
-               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-
-        <label for="password" style="display: block; margin-bottom: 5px;">Contraseña Inicial:</label>
-        <input type="password" id="password" name="password" required 
-               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-
-        <label for="celular" style="display: block; margin-bottom: 5px;">
-            Número de **Celular** (con código de país, ej: +51999888777):
-        </label>
-        <input type="text" id="celular" name="celular" 
-               value="{{ data.celular if data else '' }}"
-               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-        <label for="tarifa_base" style="display: block; margin-bottom: 5px;">Tarifa Base por Hora (USD):</label>
-        <input type="number" id="tarifa_base" name="tarifa_base" step="0.01" value="{{ data.tarifa_base if data else '50.00' }}"
-               style="width: 100%; padding: 8px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-
-        <button type="submit" class="btn" style="background-color: #ff9900;">Registrar Guía</button>
-    </form>
-{% endblock %}
+        <p style="margin-top: 20px;"><a href="{{ url_for('menu_principal') }}">← Volver al Menú Principal</a></p>
+    </div>
+</body>
+</html>

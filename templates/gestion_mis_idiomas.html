@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Mis Idiomas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container { 
+            max-width: 700px; 
+            margin-top: 50px; 
+            margin-bottom: 50px;
+            background: white; 
+            padding: 40px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            border-left: 5px solid #007bff; /* Color primario */
+        }
+        h2 { 
+            color: #007bff; 
+            margin-bottom: 30px; 
+            font-weight: bold;
+        }
+        .idioma-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #ced4da;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+        }
+        .idioma-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center"><i class="fas fa-language"></i> Gestionar Mis Idiomas</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <p class="text-muted text-center mb-4">Selecciona los idiomas en los que puedes ofrecer tus servicios de guía turístico.</p>
+        
+        <form method="POST" action="{{ url_for('gestion_mis_idiomas') }}">
+            
+            <div class="form-group">
+                <label>Idiomas Disponibles:</label>
+                <div class="idioma-list">
+                    
+                    {% if not idiomas_disponibles %}
+                        <div class="alert alert-info text-center">
+                            Aún no hay idiomas registrados por el Administrador.
+                        </div>
+                    {% else %}
+                        {% for idioma in idiomas_disponibles %}
+                        <div class="idioma-item">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" 
+                                       class="custom-control-input" 
+                                       id="idioma_{{ idioma.id }}" 
+                                       name="idiomas_seleccionados" 
+                                       value="{{ idioma.id }}"
+                                       {% if idioma.seleccionado %}checked{% endif %}>
+                                <label class="custom-control-label" for="idioma_{{ idioma.id }}">
+                                    {{ idioma.nombre }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block mt-4">
+                <i class="fas fa-save"></i> Guardar Mis Idiomas
+            </button>
+        </form>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('panel_guia') }}">← Volver al Panel del Guía</a>
+        </div>
+    </div>
+</body>
+</html>

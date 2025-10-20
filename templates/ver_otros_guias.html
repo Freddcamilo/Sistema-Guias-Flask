@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guías Registrados</title>
+    <style>
+        .container { max-width: 900px; margin: 50px auto; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; }
+        h1 { border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+        .guia-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .guia-card strong { display: inline-block; width: 150px; }
+        .btn-back { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👥 Guías Registrados (Excepto yo)</h1>
+        <p>A continuación se muestra el listado de otros guías en el sistema.</p>
+
+        {% if guias %}
+            {% for guia in guias %}
+                <div class="guia-card">
+                    <p><strong>Licencia:</strong> {{ guia.licencia }}</p>
+                    <p><strong>Nombre:</strong> {{ guia.nombre }}</p>
+                    <p><strong>Celular:</strong> {{ guia.celular if guia.celular else 'N/A' }}</p>
+                    <p><strong>Idiomas:</strong> {{ guia.idiomas }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No hay otros guías registrados en el sistema.</p>
+        {% endif %}
+
+        <a href="{{ url_for('panel_guia') }}" class="btn-back">← Volver al Panel del Guía</a>
+    </div>
+</body>
+</html>

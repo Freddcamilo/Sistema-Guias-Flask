@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Guía: {{ guia.nombre }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .container { max-width: 600px; margin: 50px auto; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input[type="text"], 
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; 
+        }
+        .btn-submit { background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }
+        .btn-submit:hover { background-color: #0056b3; }
+        .flashes { list-style: none; padding: 0; }
+        .flashes li { padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Editar Datos del Guía</h1>
+        <h2>Licencia: {{ guia.licencia }}</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('editar_guia', guia_id=guia.guia_id) }}">
+            
+            <div class="form-group">
+                <label for="nombre">Nombre Completo:</label>
+                <input type="text" id="nombre" name="nombre" value="{{ guia.nombre }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="celular">Teléfono Celular:</label>
+                <input type="text" id="celular" name="celular" value="{{ guia.celular or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="tarifa_base">Tarifa Base por Hora (USD):</label>
+                <input type="number" id="tarifa_base" name="tarifa_base" step="0.01" value="{{ '%.2f' % guia.tarifa_base }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="idiomas">Idiomas que domina (Seleccione uno o más):</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 5px; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+                    {% for idioma_id, nombre in idiomas %}
+                        <div style="flex: 0 0 auto;">
+                            <input type="checkbox" 
+                                   id="idioma_{{ idioma_id }}" 
+                                   name="idiomas" 
+                                   value="{{ idioma_id }}"
+                                   {% if idioma_id in idiomas_actuales %}checked{% endif %}>
+                            <label for="idioma_{{ idioma_id }}" style="display: inline;">{{ nombre }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Guardar Cambios</button>
+        </form>
+
+        <p style="margin-top: 20px;"><a href="{{ url_for('panel_guia') }}">← Volver al Panel del Guía</a></p>
+    </div>
+</body>
+</html>

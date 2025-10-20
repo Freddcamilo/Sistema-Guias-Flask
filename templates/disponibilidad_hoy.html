@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disponibilidad Global Hoy</title>
+    <style>
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; }
+        h1 { border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .no-data { background-color: #ffe0b2; padding: 15px; text-align: center; border-radius: 5px; }
+        .btn-back { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☀️ Disponibilidad Global para Hoy</h1>
+        <h2>Fecha: **{{ fecha_hoy }}**</h2>
+
+        {% if disponibilidad %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Guía</th>
+                        <th>Hora de Inicio</th>
+                        <th>Hora de Fin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in disponibilidad %}
+                        <tr>
+                            <td>{{ item.guia_nombre }}</td>
+                            <td>{{ item.hora_inicio }}</td>
+                            <td>{{ item.hora_fin }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-data">
+                <p>No se ha registrado disponibilidad por ningún guía para la fecha de hoy ({{ fecha_hoy }}).</p>
+            </div>
+        {% endif %}
+
+        <a href="{{ url_for('panel_guia') }}" class="btn-back">← Volver al Panel del Guía</a>
+    </div>
+</body>
+</html>

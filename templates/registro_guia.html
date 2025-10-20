@@ -3,41 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión</title>
+    <title>Registro de Guía</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
             background-color: #f8f9fa;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            font-family: 'Times New Roman', Times, serif;
         }
-        .login-container {
+        .register-container {
             background-color: white;
             padding: 40px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 380px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 450px;
         }
-        .form-group label {
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #28a745;
             font-weight: bold;
-        }
-        /* Título para Guía/Administrador (General) */
-        h2 { 
-            font-size: 2.5rem;
-            margin-bottom: 25px;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
+    <div class="register-container">
+        <h2 class="text-center">
+            <i class="fas fa-user-plus"></i> Registro de Nuevo Guía
+        </h2>
         
-        <h2 class="text-center">Iniciar Sesión (Guía/Administrador)</h2>
-
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -46,25 +45,33 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('login_guia') }}">
+        <form method="POST" action="{{ url_for('registro_guia') }}">
             <div class="form-group">
-                <label for="licencia">Licencia:</label>
+                <label for="licencia">Número de Licencia Turística:</label>
                 <input type="text" class="form-control" id="licencia" name="licencia" required>
             </div>
             <div class="form-group">
-                <label for="password">Contraseña:</label>
+                <label for="nombre">Nombre Completo:</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña (Mínimo 6 caracteres):</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
             
-            <button type="submit" class="btn btn-primary btn-block mt-4">
-                Iniciar Sesión
+            <button type="submit" class="btn btn-success btn-block mt-4">
+                Solicitar Registro
             </button>
         </form>
         
         <div class="text-center mt-3">
-            <p>¿No tienes cuenta? <a href="{{ url_for('registro_guia') }}">Regístrate aquí</a></p>
+            <p>¿Ya tienes cuenta? <a href="{{ url_for('login_guia') }}">Inicia Sesión aquí</a></p>
             <p><a href="{{ url_for('menu_principal') }}">← Volver al Menú Principal</a></p>
         </div>
+        
+        <p class="text-muted text-center small mt-3">
+            *Su cuenta estará inactiva hasta que un administrador apruebe su licencia.
+        </p>
     </div>
 
 </body>

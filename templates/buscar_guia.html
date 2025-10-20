@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar Guía Disponible</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Encontrar Guía Disponible</h2>
+        <p class="text-muted">Busca guías registrados por fecha y filtra opcionalmente por idioma.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                Opciones de Búsqueda
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('buscar_guia') }}">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="fecha_buscada">Fecha de Servicio (*):</label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="fecha_buscada" 
+                                   name="fecha_buscada" 
+                                   value="{{ fecha_buscada or fecha_actual }}" 
+                                   required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="idioma_id">Filtrar por Idioma (Opcional):</label>
+                            <select id="idioma_id" name="idioma_id" class="form-control">
+                                <option value="">--- Todos los Idiomas ---</option>
+                                {% for id, nombre in idiomas %}
+                                    <option value="{{ id }}" {% if idioma_id|string == id|string %}selected{% endif %}>
+                                        {{ nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-block">Buscar Guías</button>
+                </form>
+            </div>
+        </div>
+
+        {% if resultados %}
+            <h3>Guías Disponibles para el {{ fecha_buscada_formateada }} ({{ resultados|length }})</h3>
+            <div class="list-group">
+            {% for guia in resultados %}
+                <div class="list-group-item list-group-item-action flex-column align-items-start mb-2 shadow-sm">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1 text-primary">{{ guia.nombre }} (Lic. {{ guia.licencia }})</h5>
+                        <small class="badge badge-info p-2">Disponible: {{ guia.hora_inicio[:5] }} - {{ guia.hora_fin[:5] }}</small>
+                    </div>
+
+                    <p class="mb-1 mt-1">
+                        **Idiomas:** **{{ guia.idiomas_dominados or 'No especificados' }}**
+                    </p>
+
+                    <p class="mb-1 text-muted small">{{ guia.bio }}</p>
+
+                    <small class="d-block mt-2">
+                        Teléfono: <strong>{{ guia.telefono or 'N/A' }}</strong> | 
+                        Email: <strong>{{ guia.email or 'N/A' }}</strong>
+                    </small>
+                </div>
+            {% endfor %}
+            </div>
+        {% elif request.method == 'POST' %}
+            <p class="text-center text-muted">No se encontraron guías que cumplan los criterios de búsqueda.</p>
+        {% else %}
+             <p class="text-center text-muted">Mostrando resultados para la fecha actual ({{ fecha_buscada_formateada }}). Presione "Buscar Guías" o elija otra fecha.</p>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{{ url_for('menu_principal') }}" class="btn btn-secondary">Volver al Menú Principal</a>
+        </div>
+    </div>
+</body>
+</html>

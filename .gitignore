@@ -1,8 +1,12 @@
-# D:\guia_mp_nuevo\.gitignore
+# Entorno Virtual (importante, ya que el servidor creará el suyo)
+venv/
+
+# Archivos de Python generados
 __pycache__/
 *.pyc
-.venv/
-venv/
-machupicchu_guias.db
+
+# Base de datos local (NO subir datos sensibles o temporales)
+guias.db
+
+# Archivos del sistema operativo
 .DS_Store
-.vscode/

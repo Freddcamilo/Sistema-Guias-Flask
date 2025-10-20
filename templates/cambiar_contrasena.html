@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambiar Contraseña</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 class="mb-4 text-info text-center">
+            <i class="fas fa-key"></i> Cambiar Contraseña
+        </h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('cambiar_contrasena') }}">
+            <div class="form-group">
+                <label for="actual_password">Contraseña Actual:</label>
+                <input type="password" class="form-control" id="actual_password" name="actual_password" required>
+            </div>
+            <div class="form-group">
+                <label for="nueva_password">Nueva Contraseña:</label>
+                <input type="password" class="form-control" id="nueva_password" name="nueva_password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-info btn-block mt-4">
+                Actualizar Contraseña
+            </button>
+        </form>
+        
+        <div class="text-center mt-3">
+            {% if session.get('user_rol') == 'admin' %}
+                <p><a href="{{ url_for('panel_admin') }}">← Volver al Panel Admin</a></p>
+            {% else %}
+                <p><a href="{{ url_for('panel_guia') }}">← Volver al Panel de Guía</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

@@ -2,56 +2,73 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Guías - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Guías (ADMIN)</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 900px; margin: 50px auto; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; }
+        h1 { color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .flash-success { background-color: #d4edda; color: #155724; padding: 10px; border: 1px solid #c3e6cb; margin-bottom: 15px; }
-        .flash-error { background-color: #f8d7da; color: #721c24; padding: 10px; border: 1px solid #f5c6cb; margin-bottom: 15px; }
+        th { background-color: #f8d7da; color: #721c24; }
+        .btn-delete { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-delete:hover { background-color: #c82333; }
+        .btn-back { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        /* Estilos para mensajes flash */
+        .flashes { list-style: none; padding: 0; }
+        .flashes li { padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: left; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
-    <h1>Reporte de Guías Registrados</h1>
+    <div class="container">
+        <h1>❌ Reporte General de Guías (ADMINISTRADOR)</h1>
+        <p>Utilice esta tabla para visualizar y, si es necesario, eliminar guías del sistema.</p>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <a href="{{ url_for('menu_principal') }}">← Volver al Menú Principal</a>
-
-    {% if guias %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Licencia</th>
-                    <th>Nombre</th>
-                    <th>Celular</th>
-                    <th>Tarifa Base</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for guia in guias %}
-                <tr>
-                    <td>{{ guia[0] }}</td> <td>{{ guia[1] }}</td> <td>{{ guia[2] }}</td> <td>{{ guia[3] }}</td> <td>${{ "%.2f"|format(guia[4]) }}</td> <td>
-                        <form method="POST" action="{{ url_for('eliminar_guia', guia_id=guia[0]) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar al guía {{ guia[2] }}? ESTA ACCIÓN NO SE PUEDE DESHACER.');">
-                            <button type="submit" style="background-color: red; color: white; border: none; padding: 5px 10px; cursor: pointer;">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No hay guías registrados en la base de datos.</p>
-    {% endif %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
+        {% if guias %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Licencia</th>
+                        <th>Nombre</th>
+                        <th>Celular</th>
+                        <th>Tarifa Base</th>
+                        <th>Idiomas</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guia in guias %}
+                        <tr>
+                            <td>{{ guia.licencia }}</td>
+                            <td>{{ guia.nombre }}</td>
+                            <td>{{ guia.celular if guia.celular else 'N/A' }}</td>
+                            <td>${{ "{:.2f}".format(guia.tarifa_base) if guia.tarifa_base else 'N/A' }}</td>
+                            <td>{{ guia.idiomas }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('eliminar_guia', guia_id=guia.guia_id) }}" onsubmit="return confirm('¿Está seguro de que desea eliminar a {{ guia.nombre }} y todos sus registros? ESTA ACCIÓN ES IRREVERSIBLE.');">
+                                    <button type="submit" class="btn-delete">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay guías registrados en el sistema.</p>
+        {% endif %}
+
+        <a href="{{ url_for('panel_admin') }}" class="btn-back">← Volver al Panel del Administrador</a>
+    </div>
 </body>
 </html>
