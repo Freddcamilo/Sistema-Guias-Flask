@@ -1,12 +1,6 @@
-# Entorno Virtual (importante, ya que el servidor creará el suyo)
+# -- CONTENIDO DE .gitignore --
 venv/
-
-# Archivos de Python generados
 __pycache__/
 *.pyc
-
-# Base de datos local (NO subir datos sensibles o temporales)
-guias.db
-
-# Archivos del sistema operativo
+guias.db  # Excluye la base de datos local
 .DS_Store
